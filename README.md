@@ -1,2 +1,2 @@
-# MySQL-Week4
+# MySQL-week4
 BESD Bootcamp MySQL Week 4 Assignment
