@@ -10,7 +10,7 @@ USE employees;
 
 
 --
--- Test Procedure #1 with 3 Different Department Names
+-- Test Procedure #1 with 4 Different Department Names (One doesn't exist)
 --
 --   Procedure:  get_emp_count_by_dept()
 --
@@ -59,10 +59,11 @@ SELECT @currentSalary AS "New Salary";
 --  
 --  Add a new employee to the employees database, 
 --  	with records in:  employees, salaries, titles, and dept_emp tables
---	NOTE:  to avoid adding the same employee more than once, a check is done
---			to see if the employee already exists... and is not re-added if so.
+--  NOTE:  to avoid adding the same employee more than once, a check is done
+--  to see if the employee already exists... and is not re-added if so.
 -- 
-SET @error = 0;
+
+
 SELECT max(emp_no) FROM employees;
 
 --
@@ -75,8 +76,6 @@ CALL AddNewEmployee("2000-03-03", "Daffy", "Duck", 'M', "2020-03-03", "d002", 87
 CALL AddNewEmployee("2000-04-03", "Daisy", "Duck", 'F', "2020-04-03", "d003", 88000, "Manager",@error);
 CALL AddNewEmployee("2000-04-04", "Pluto", "Dog", 'M', "2020-04-04", "d004", 89000, "Technique Leader",@error);
 CALL AddNewEmployee("2000-05-05", "Tinkerbell", "Fairy", 'F', "2020-05-05", "d005", 90000, "Senior Engineer",@error);
-
-SELECT @error;
 
 SELECT max(emp_no) FROM employees;
 

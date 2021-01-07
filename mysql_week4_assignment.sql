@@ -3,8 +3,6 @@
 -- MySQL Week 4 Coding Assignment
 -- Promineo Tech BESD Coding Bootcamp
 --
---  Author:  Lisa Maatta Smith
---
 
 USE employees;
 
@@ -16,33 +14,26 @@ USE employees;
 -- NOTE:  Procedures should use constructs you learned about from your 
 --			research assignment and be more than just queries.
 --
-
-
 --
 -- MySQL Week 4 Coding Assignment
 -- Procedure #1
 -- Get the count of the employees in a particular department.
--- 			Input parameter:  department_name
--- 			Output Parameter:  num_of_emp
+-- Input parameter:  department_name
+-- Output Parameter:  num_of_emp
 
 DROP PROCEDURE IF EXISTS GetEmpCountByDept; 
 
 DELIMITER %% ;
-CREATE PROCEDURE GetEmpCountByDept(IN department_name VARCHAR(40), 
-								   INOUT num_of_emp INTEGER)
+CREATE PROCEDURE GetEmpCountByDept (IN department_name VARCHAR(40), INOUT num_of_emp INTEGER)
 BEGIN	
-	DECLARE dept_exists INTEGER DEFAULT 0;
-	
 	-- Check that department_name actually exists
 	SELECT count(*) 
-	INTO dept_exists  	
+	INTO num_of_emp  	
 	FROM departments d
-	WHERE d.dept_name = department_name;
-	
+	WHERE d.dept_name = department_name;	
 	-- If it exists in the departments table, then do a count
 	-- Otherwise, just return.
-	
-	IF (dept_exists = 1)
+	IF (num_of_emp = 1)
 	THEN
 		SELECT count(*) INTO num_of_emp 
 		FROM employees e
@@ -60,7 +51,7 @@ DELIMITER ; %%
 
 -- Procedure #2  CalculateRaise()
 -- Calculate Raise based on current salary
--- 	 Input parameters:  emp_num, percentageRaise, 
+-- 	 Input parametesr:  emp_num, percentageRaise, 
 -- 	 Output Parameter: newSalary
 
 DROP PROCEDURE IF EXISTS CalculateRaise; 
@@ -83,7 +74,7 @@ DELIMITER ; %%
 
 
 
--- Procedure #3a:  AddNewEmployee()
+-- Procedure #3:  AddNewEmployee()
 --  
 --  Add an employee to the employees database.  
 --   (1) Auto-increment the employee number, to avoid duplicates.  
@@ -107,14 +98,14 @@ DROP PROCEDURE IF EXISTS AddNewEmployee;
 DELIMITER %% ;
 
 CREATE PROCEDURE AddNewEmployee(IN birthdate DATE,
-							    IN f_name VARCHAR(14),
-							    IN l_name VARCHAR(16),
-							    IN gender_val ENUM('M','F'),
-							    IN hiredate DATE,
-							    IN dept_num CHAR(4),
-							    IN new_salary INTEGER,
-							    IN new_title VARCHAR(50),
-							    OUT error BOOLEAN)
+							  IN f_name VARCHAR(14),
+							  IN l_name VARCHAR(16),
+							  IN gender_val ENUM('M','F'),
+							  IN hiredate DATE,
+							  IN dept_num CHAR(4),
+							  IN new_salary INTEGER,
+							  IN new_title VARCHAR(50),
+							  OUT error BOOLEAN)
 BEGIN		
 	DECLARE emp_equal_count INT DEFAULT 0;
 	DECLARE max_emp_no,new_emp_no INTEGER DEFAULT 0;
@@ -146,46 +137,7 @@ BEGIN
 END%%   
 	
 DELIMITER ; %%
-
-
--- Procedure #3b:  DeleteEmployee()
---  
---  Delete an employee from the employees database.  Because of the cascading 
---			deletes, we only need to delete the record from employees, and it will
---			be removed from all of the other tables.
---   
--- 	 Input parameter:  emp_num
--- 	 Output Parameter:  error
---
---   Local Variables:  max_emp_no -- the current maximum employee number
---                     new_emp_no -- max_emp_no incremented by one
---					   def_to_date -- set to "9999-01-01"
---					   def_from_date -- set to CURDATE()
---
-
-DROP PROCEDURE IF EXISTS DeleteEmployee;
-
-DELIMITER %% ;
-CREATE PROCEDURE DeleteEmployee (IN emp_num INT,
-							     OUT error BOOLEAN)
-BEGIN			
-	DECLARE emp_exists INT DEFAULT 0;
 	
-	SELECT count(*) 
-	INTO emp_exists
-	FROM employees
-	WHERE emp_no = emp_num;
-	
-	IF (emp_exists = 1) 
-	THEN
-		DELETE FROM employees WHERE emp_no = emp_num;	
-		SET error = 1;
-	ELSE
-		SET error = 0;
-	END IF;
-END%%
-
-DELIMITER ; %%
 
 
 -- Procedure #4:  SalaryPerCalendarYear()
@@ -196,6 +148,8 @@ DELIMITER ; %%
 -- 	 Output Parameter:  pro_rated_salary
 --
 
+
+
 -- In the salary table, there is one record per year, per salary, per employee.
 -- In the dept_emp, we can correlate which employees worked for which department
 -- within a calendar year.
@@ -203,15 +157,12 @@ DELIMITER ; %%
 -- Since there is a record per year, per salary, per employee, in the salaries table
 -- then the salary changes on the from_date to a new salary.  
 
--- Salary in OUR employees database has a value which is in effect for one year,
+-- Salary in the employees database has a value which is in effect for one year,
 -- 		starting at a random date in the year.  
---
---		(e.g. emp_no 10058, salary = 53377, from_date = 1989-04-25, to_date = 1990-04-25
--- 		  AND emp_no 10058, salary = 53869, from_date = 1990-04-25, to_date = 1991-04-25)
--- 
+--		(e.g.  53000 salary from 1989-05-06 to 1990-05-05
+--		  AND  54500 salary from 1990-05-06 to 1991-05-05)
 -- 		What if an employer wants to know calendar year pro-rating, or possibly
---		fiscal year pro-rating?  
---				This procedure returns the calendar year pro-rating.
+--		fiscal year pro-rating?  This procedure returns the calendar year pro-rating.
 
 
 DROP PROCEDURE IF EXISTS SalaryPerCalendarYear; 
@@ -236,8 +187,7 @@ BEGIN
 	INTO variable1
 	FROM salaries s 
 	INNER JOIN dept_emp de ON (de.emp_no = s.emp_no) 
-	INNER JOIN departments d ON (d.dept_no = de.dept_no AND d.dept_name = department_name 
-							AND (s.from_date BETWEEN de.from_date AND de.to_date)) 
+	INNER JOIN departments d ON (d.dept_no = de.dept_no AND d.dept_name = department_name AND (s.from_date BETWEEN de.from_date AND de.to_date)) 
 	WHERE s.emp_no = emp_no AND (EXTRACT(YEAR FROM s.from_date) = 1990);	
 
 
@@ -248,8 +198,7 @@ BEGIN
 	INTO variable2
 	FROM salaries s 
 	INNER JOIN dept_emp de ON (de.emp_no = s.emp_no) 
-	INNER JOIN departments d ON (d.dept_no = de.dept_no AND d.dept_name = department_name 
-							AND (s.to_date BETWEEN de.from_date AND de.to_date)) 
+	INNER JOIN departments d ON (d.dept_no = de.dept_no AND d.dept_name = department_name AND (s.to_date BETWEEN de.from_date AND de.to_date)) 
 	WHERE s.emp_no = emp_no AND (EXTRACT(YEAR FROM s.to_date) = 1990);
 		
 	SET pro_rated_salary = variable1 + variable2;
