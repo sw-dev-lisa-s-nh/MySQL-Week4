@@ -173,7 +173,6 @@ CREATE PROCEDURE SalaryPerCalendarYear (IN emp_no INT,
 										   IN cal_year INT, 
 										   IN department_name VARCHAR(40),
 										   OUT pro_rated_salary DECIMAL(11,2))
-READS SQL DATA
 BEGIN
 	DECLARE variable1 DECIMAL(11,2) DEFAULT 0.00;
 	DECLARE variable2 DECIMAL(11,2) DEFAULT 0.00;
@@ -229,7 +228,6 @@ CREATE PROCEDURE UpdateEmploymentRecord(IN emp_num INT,
 										  IN new_dept CHAR(4), 
 										  IN effective_on DATE, 
 										  OUT error INTEGER)
-READS SQL DATA
 BEGIN
 	DECLARE emp_in_old_dept INTEGER DEFAULT 0;
 
