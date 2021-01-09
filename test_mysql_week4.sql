@@ -164,12 +164,33 @@ SELECT * FROM dept_emp WHERE emp_no > 499999;
 SELECT * FROM employees WHERE emp_no > 499999;
 
 
+
+-- 
+-- Test Procedure #EXTRA: (CountOfEmployeesOverSalaryThreshold);
+--  
+--  I wanted to try WHILE, and struggled to find a good reason to use it in
+--  a stored procedure.  Here is what I came up with.
+--
+
+CALL CountOfEmployeesOverSalaryThreshold (100000, @countresult);
+SELECT @countresult;
+
+-- 
+-- To Test My result, I did the following, and the result is the same!
+--
+
+DROP VIEW IF EXISTS employeesMaxSalaryOver100000; 
+
+CREATE VIEW employeesMaxSalaryOver100000 AS
+SELECT emp_no, count(emp_no),max(salary) FROM salaries
+GROUP BY emp_no HAVING max(salary) > 100000;
+
+SELECT COUNT(*) AS "Final Count" FROM employeesMaxSalaryOver100000;
+
+
 --
 -- End of MySQL Week 4 Coding Assignment Tests
 --
-
-
-
 
 
 

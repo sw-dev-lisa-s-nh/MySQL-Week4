@@ -2,7 +2,7 @@
 --
 -- MySQL Week 4 Coding Assignment
 -- Promineo Tech BESD Coding Bootcamp
---
+--  Author:  Lisa Maatta Smith
 
 USE employees;
 
@@ -15,25 +15,27 @@ USE employees;
 --			research assignment and be more than just queries.
 --
 --
--- MySQL Week 4 Coding Assignment
--- Procedure #1
--- Get the count of the employees in a particular department.
--- Input parameter:  department_name
--- Output Parameter:  num_of_emp
+-- 
+-- Procedure #1  GetEmpCountByDept()
+--            Retrieve the count of the employees in a particular department.
+-- 
+--            Input parameter:  department_name
+--            Output Parameter:  num_of_emp
 
 DROP PROCEDURE IF EXISTS GetEmpCountByDept; 
 
 DELIMITER %% ;
 CREATE PROCEDURE GetEmpCountByDept (IN department_name VARCHAR(40), INOUT num_of_emp INTEGER)
 BEGIN	
-	-- Check that department_name actually exists
+    DECLARE dept_exists INTEGER DEFAULT 0;
+    -- Check that department_name actually exists
 	SELECT count(*) 
-	INTO num_of_emp  	
+	INTO dept_exists  	
 	FROM departments d
 	WHERE d.dept_name = department_name;	
 	-- If it exists in the departments table, then do a count
 	-- Otherwise, just return.
-	IF (num_of_emp = 1)
+	IF (dept_exists = 1)
 	THEN
 		SELECT count(*) INTO num_of_emp 
 		FROM employees e
@@ -50,8 +52,9 @@ DELIMITER ; %%
 
 
 -- Procedure #2  CalculateRaise()
--- Calculate Raise based on current salary
--- 	 Input parametesr:  emp_num, percentageRaise, 
+--                 Calculate Raise based on current salary
+--
+-- 	 Input parameters:  emp_num (current employee num), percentageRaise (integer) 
 -- 	 Output Parameter: newSalary
 
 DROP PROCEDURE IF EXISTS CalculateRaise; 
@@ -79,13 +82,18 @@ DELIMITER ; %%
 --  Add an employee to the employees database.  
 --   (1) Auto-increment the employee number, to avoid duplicates.  
 --		 Retrieve the max emp_no value, and increment when inserting the new employee.
---   (2) Insert record into employees table with new_emp_no variable & input params.
---   (3) Insert record into dept_emp table with new_emp_no & dept_num input params.
---   (4) 
+--   (2) If the employee exists -- birthdate, first_name and last_name match --
+-- 					set output parameter to 0, and return without insertion.
+--   (3) ELSE 
+--         (a) Insert record into employees table with new_emp_no  & input params.
+--         (b) Insert record into dept_emp table with new_emp_no & dept_num input params.
+--         (c) Insert record into titles table with new_emp_no & title
+--         (d) Insert record into salaries table with new_emp_no & salary
 -- 
 -- 	 Input parameter:  birth_date, first_name, last_name, gender, hire_date, dept_num,
 --					   salary, title,
--- 	 Output Parameter:  none
+-- 	 Output Parameter:  error -- Set to 1 if INSERT successful, Set to 0 if emp exists.
+--   
 --   Local Variables:  max_emp_no -- the current maximum employee number
 --                     new_emp_no -- max_emp_no incremented by one
 --					   def_to_date -- set to "9999-01-01"
@@ -138,8 +146,41 @@ END%%
 	
 DELIMITER ; %%
 	
+--
+--  Procedure #3b:  DeleteEmployee()
+--
+--  Deletes an employee from the employees database.  As a result of having 
+--     constraints (cascading deletes), we only need to delete the record from 
+--     the employees table, and it will be removed from all of the other tables.
+--
+--   Input parameter(s):  emp_num
+--   Output parameter(s):  error
+--
+
+DROP PROCEDURE IF EXISTS DeleteEmployee;
+
+DELIMITER %% ;
+
+CREATE PROCEDURE DeleteEmployee (IN emp_num INTEGER, OUT error BOOLEAN)
+BEGIN
+	DECLARE emp_exists INT DEFAULT 0;
+	SELECT count(*) 
+	INTO emp_exists
+	FROM employees 
+	WHERE emp_no = emp_num;	
+	IF (emp_exists = 1)
+	THEN
+		DELETE FROM employees WHERE emp_no = emp_num;
+		SET error = 1;
+	ELSE
+		SET error = 0;	
+	END IF;
+END%%
+
+DELIMITER ; %%
 
 
+-- 
 -- Procedure #4:  SalaryPerCalendarYear()
 --				  This procedure calculates the calendar year salary total 
 --				  for a particular employee in a particular department.
@@ -253,5 +294,37 @@ END %%
 
 DELIMITER ; %%
 
+--
+-- Extra Procedure:  I wanted to test out using a WHILE loop
+-- 					 CountOfEmployeesOverSalaryThreshold()
+-- 
+-- Input:   salaryThreshold INTEGER
+-- Output:  countOfEmployees INTEGER
+-- Purpose:  Find out how many employees make over a certain Threshold 
+--      I used 100000 in my test example.
 
-		
+DROP PROCEDURE IF EXISTS CountOfEmployeesOverSalaryThreshold;
+
+DELIMITER %% ;
+
+CREATE PROCEDURE CountOfEmployeesOverSalaryThreshold (IN salaryThreshold INTEGER, OUT countOfEmployees INTEGER)
+BEGIN
+	DECLARE runningTotal,max_emp_no,counter,tempSalary INTEGER DEFAULT 0;
+	SELECT max(emp_no) INTO max_emp_no FROM employees;
+
+	WHILE (counter < max_emp_no)
+	DO
+		 SELECT max(salary)
+		 INTO tempSalary
+		 FROM salaries WHERE emp_no = counter;	
+	     IF (tempSalary > salaryThreshold)
+	     THEN
+			SET runningTotal = runningTotal + 1;
+		 END IF;
+		 SET counter = counter + 1;
+		 SET tempSalary = 0;
+	END WHILE;
+	SET countOfEmployees = runningTotal;	 
+END%%
+
+DELIMITER ; %% 
